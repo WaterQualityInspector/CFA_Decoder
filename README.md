@@ -29,4 +29,4 @@ Insecurities in their [customer experience portal](https://www.mycfavisit.com) a
 
 **Sequence 5 (2-Digits)**
 - The first of the two digits in the last sequence is the last number of the year that the transation was made in (e.g. 2019 -> 9).
-- Luhn Checkdigit to the preceding sequence of numbers. Also can be randomly generated.
+- Luhn Checkdigit to the preceding sequence of numbers. Also can be randomly generated if you feel like throwing cpu at it.
