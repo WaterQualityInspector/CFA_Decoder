@@ -1,12 +1,85 @@
 from datetime import datetime, timedelta
 import random
 import re
-import selenium
 import time
-from requests import session
+import requests
+from requests.exceptions import ProxyError, Timeout, RequestException
+from requests.adapters import HTTPAdapter, Retry
+
+# <editor-fold desc="Settings">
+# request retry strategy
+retry_strategy = Retry(
+    total=6,  # Total retries
+    backoff_factor=0.2  # A delay between retries (e.g., 1 second, then 2 seconds, etc.)
+)
+
+proxy_archive_url = "https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/countries/US/data.json"
+archive_response = requests.get(proxy_archive_url)
+is_proxy_fetched = False
+
+if archive_response.status_code == 200:
+    print("Proxy List Fetched for US")
+    proxy_json = archive_response.json()
+    proxy_json = [entry['proxy'] for entry in proxy_json if entry['geolocation']['country'] == 'US']
+
+    proxy_ips = []
+    proxy_protocols = []
+    for proxy in proxy_json:
+        strings = re.split(r'://', proxy)
+        proxy_protocols.append(strings[0])
+        proxy_ips.append(strings[1])
+
+    is_proxy_fetched = True
+    proxy_set = list(zip(proxy_protocols, proxy_ips))
+    print(len(proxy_json), len(proxy_protocols), len(proxy_ips))
+    print(proxy_json[0], proxy_protocols[0], proxy_ips[0])
+else:
+    print(f"Proxy List Request Failed!!! {archive_response.status_code}")
 
 
-def code_gen(store_number: str, day_delta: int = 2,dont_care_about_dine_type: bool = False, want_dine_in_only: bool = True) -> list:
+# </editor-fold>
+
+def find_working_proxy(url='https://www.mycfavisit.com/'):
+    while is_proxy_fetched:  # Keep trying until a successful request is made if proxy list is there
+        try:
+            # Select a random proxy and protocol
+            protocol, proxy_ip = random.choice(proxy_set)
+
+            # Construct the proxy string (e.g., 'socks4://72.147.231.10:31034')
+            proxy_url = f'{protocol}://{proxy_ip}'
+
+            # Set up the proxy dictionary for requests
+            proxies = {
+                'http': proxy_url,
+                'https': proxy_url
+            }
+
+            # Make the HTTP request through the proxy
+            response = requests.get(url, proxies=proxies, timeout=4)
+
+            # If successful, return the content
+            if response.status_code == 200:
+                print(f"CONNECTION SUCCESS: {proxy_url}")
+                return proxy_url, response.text
+
+            print(f"Failed with proxy {proxy_url}, status code: {response.status_code}")
+
+        except (ProxyError, Timeout, RequestException) as e:
+            # Handle proxy failure, retry with another proxy
+            print(f"__Error with proxy {proxy_ip}__: {re.split(r': ', str(e))[1]}")
+            continue
+
+        finally:
+            # Add a delay to avoid spamming
+            time.sleep(0.2)
+
+    # If no proxies are available or fetching fails, handle this case
+    print("No proxies available to fetch the page.")
+    return None
+
+
+def code_gen(store_number: str, day_delta: int = 2, dont_care_about_dine_type: bool = False,
+             want_dine_in_only: bool = True) -> list:
     # Last three digits of the order number on the receipt, e.g. 5222632 --> 632. So 000-999.
     order_num = str(random.randint(0, 999)).zfill(3)
 
@@ -51,7 +124,7 @@ def code_gen(store_number: str, day_delta: int = 2,dont_care_about_dine_type: bo
 
     ##########################################################################
     # date = MM:DD
-    yesterday = datetime.today()-timedelta(days=day_delta)
+    yesterday = datetime.today() - timedelta(days=day_delta)
 
     if yesterday.weekday() == 6:
         raise ValueError("You are looking for codes on a Sunday. You will not find any. CFA isn't open..")
@@ -98,10 +171,13 @@ def code_gen(store_number: str, day_delta: int = 2,dont_care_about_dine_type: bo
     return result
 
 
+find_working_proxy()
+
+
 # Have not touched the section here below, it's a skeleton code. WIP
 
 def check_code(code):
-    s = session()
+    s = requests.session()
 
     # Set up headers to mimic a browser
     headers = {
@@ -140,8 +216,8 @@ def check_code(code):
     else:
         raise Exception('Hit Block Page')
 
-check_code(code_gen("02536", 2, False, True))
 
+# <editor-fold desc="From previous work">
 """
 def check_code(code, proxy):
     s = session()
@@ -171,3 +247,4 @@ def complete_survey(code, proxy):
 if __name__ == "__main__":
     main()
 """
+# </editor-fold>
