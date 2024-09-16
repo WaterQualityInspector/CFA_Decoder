@@ -1,4 +1,4 @@
-# CFA Decoder. Combined and streamlined from works of Dejan992 and Anthony Angone (a friend of mine)
+# CFA Decoder. Combined and streamlined from works of Dejan992 and Anthony (a friend of mine)
 
 ## READ ME adapted from Dejan992. 
 Bruteforcing our way towards ultimate customer satisfaction- free food! **(For Educational Purposes Only, Use at Your Own Discretion)**
