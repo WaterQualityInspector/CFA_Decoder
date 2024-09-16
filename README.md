@@ -9,12 +9,12 @@ Insecurities in their [customer experience portal](https://www.mycfavisit.com) a
 ### Example Serial Num: 6320106-01336-1109-0523-95
 
 **Sequence 1 (7-Digits)**
-- Out of the first sequence of seven digits, the first three represent the last three digits of the **Order Number**, printed near the top of the customer copy receipt (in this case, the order number was 5222**632**).
-- The 4-5th digit is assumed to be the revenue center (dine-in, carry-out, drive-thru), in this case dine-in was represented by a 1 (printed below the date/time on the customer copy).
+- The 1-3rd digits represent the last three digits of the **Order Number**, printed near the top of the customer copy receipt (in this case, the order number was 5222**632**).
+- The 4-5th digits are assumed to be the revenue center (dine-in, carry-out, drive-thru), in this case dine-in was represented by a 1 (printed below the date/time on the customer copy).
   - The string is zfilled to 2 digits, so 1 -> 01.
     - For dine-in: 01 and 03 are the most common.
     - For drive-thru: 02 is the most common.
-- The 6-7th digit of this first sequence represents the register that the transaction was carried out on (printed above the cashier name on the customer copy), in this case, register 6.
+- The 6-7th digits of this first sequence represent the register that the transaction was carried out on (printed above the cashier name on the customer copy), in this case, register 6.
   - The string is zfilled to 2 digits, so 1 -> 01.
     - For dine-in: 04, 05, and 06 are common. 04 being the most common.
     - For drive-thru: 02 is the most common. Sometimes double digits are seen depending on the locations, e.g. (56, 58, and etc).
